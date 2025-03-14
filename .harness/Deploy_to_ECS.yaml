@@ -1,0 +1,51 @@
+pipeline:
+  name: Deploy to ECS
+  identifier: Deploy_to_ECS
+  projectIdentifier: CICD_NodeJs_Terraform_ECS
+  orgIdentifier: default
+  tags: {}
+  stages:
+    - stage:
+        name: Deploy to ECS
+        identifier: Deplot_to_ECS
+        description: ""
+        type: Deployment
+        spec:
+          deploymentType: ECS
+          service:
+            serviceRef: ECS_service
+            serviceInputs:
+              serviceDefinition:
+                type: ECS
+                spec:
+                  artifacts:
+                    primary:
+                      primaryArtifactRef: <+input>
+                      sources: <+input>
+          environment:
+            environmentRef: ECS_enviroment
+            deployToAll: false
+            infrastructureDefinitions:
+              - identifier: ECS_infrastructure
+          execution:
+            steps:
+              - step:
+                  name: ECS Rolling Deploy
+                  identifier: ecsRollingDeploy
+                  type: EcsRollingDeploy
+                  timeout: 10m
+                  spec: {}
+            rollbackSteps:
+              - step:
+                  name: ECS Rolling Rollback
+                  identifier: ecsRollingRollback
+                  type: EcsRollingRollback
+                  timeout: 10m
+                  spec: {}
+        tags: {}
+        failureStrategies:
+          - onFailure:
+              errors:
+                - AllErrors
+              action:
+                type: StageRollback
